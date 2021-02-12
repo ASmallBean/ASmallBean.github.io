@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/bg/favicon.png">
+  <link rel="icon" type="image/png" href="/img/bg/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Claus&#39;s Daily. Front End Blog.">
+  <meta name="author" content="Claus">
+  <meta name="keywords" content="front end blog code">
+  <title>eval详解 - free-style-blog</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.4.0/styles/atom-one-light.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"asmallbean.github.io","root":"/","version":"1.8.6","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"copy_btn":true,"image_zoom":{"enable":true},"lazyload":{"enable":true,"onlypost":false},"web_analytics":{"enable":false,"baidu":null,"google":"G-BSGZ4382PD","gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}}};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>LESS IS MORE</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/bg/20191231163322.jpeg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="eval详解">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2020-12-05 20:09" pubdate>
+        2020年12月5日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.5k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      18
+       分钟
+    </span>
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">eval详解</h1>
+            
+            <div class="markdown-body">
+              <h1 id="eval"><a href="#eval" class="headerlink" title="eval"></a>eval</h1><h2 id="eval-强制运行在全局作用域"><a href="#eval-强制运行在全局作用域" class="headerlink" title="eval() 强制运行在全局作用域"></a><code>eval()</code> 强制运行在全局作用域</h2><p>eval函数是强大的数码转换引擎,字符串经eval转换后得到一个javascript对象,<br>举简单例子:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// 等效于var a = 5;</span><br><span class="hljs-keyword">var</span> a = <span class="hljs-built_in">eval</span>(<span class="hljs-string">&quot;5&quot;</span>);<br><br><span class="hljs-comment">// 等效于var a = &#x27;5&#x27;;</span><br><span class="hljs-keyword">var</span> a = <span class="hljs-built_in">eval</span>(<span class="hljs-string">&quot;&#x27;5&#x27;&quot;</span>);<br><br><span class="hljs-comment">// 等效于 var obj = &#123;name:&#x27;cat&#x27;,color:&#x27;black&#x27;&#125;;</span><br><span class="hljs-keyword">var</span> obj = <span class="hljs-built_in">eval</span>(<span class="hljs-string">&quot;(&#123;name:&#x27;cat&#x27;,color:&#x27;black&#x27;&#125;)&quot;</span>);<br><br><span class="hljs-comment">// 等效于 alert(&#x27;hello world!&#x27;);</span><br><span class="hljs-built_in">eval</span>(<span class="hljs-string">&quot;alert(&#x27;hello world!&#x27;);&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>js的数据类型为弱类型,可以在定义的时候指定数据类型,也可以在运算过程中强制数据类型转换</p>
+<p>一个对象经过eval转换后数据类型不确定,在相加过程中自动与其他数据类型一致</p>
+<p><code>eval(str)</code> 用来传入一个字符串动态执行一段脚本，这个方法非常有用。当直接用 <code>eval()</code> 时，作用域为当前作用域，有时候我们需要让它在全局作用域范围内执行，比如 ajax返回的脚本字符串，然而浏览器对eval的差异可能使事情刚开始并不是那么顺利，本文通过在7种浏览器(IE, Firefox, Chrome, Safari, Opera）环境中测试，并提出三种解决方案，使这个问题比较完美的解决。</p>
+<p>看这一段javascript代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">xx</span>(<span class="hljs-params"></span>)</span>&#123;<br>    <span class="hljs-keyword">var</span> x= <span class="hljs-number">1</span> ;<br>    <span class="hljs-built_in">window</span>.eval( <span class="hljs-string">&#x27;var x=3;&#x27;</span> );<br>    <span class="hljs-built_in">document</span> .writeln(x);<br>&#125;<br>xx();<br></code></pre></td></tr></table></figure>
+<p>在你自己测试和看我接下来的分析之前，先想想，你认为输出结果会是什么呢？是  <code>1</code> 还是 <code>3</code> ？</p>
+<p>根据本文的标题，可知肯定是在不同浏览器下有不同表现的。</p>
+<p>以下是我的实测数据：</p>
+<table>
+<thead>
+<tr>
+<th>浏览器</th>
+<th>版本</th>
+<th>运行</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IE</td>
+<td>7.0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>IE</td>
+<td>8.0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Firefox</td>
+<td>3.0.8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>1.0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Chrome</td>
+<td>4.0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Safari</td>
+<td>4.0.2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Opera</td>
+<td>9.62</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>可见各浏览器及版本对<code>window.eval()</code>的作用域处理是有差异的。</p>
+<p>IE中，<code>window.eval()</code> 和 <code>eval()</code>一样只在当前作用域生效。</p>
+<p>Firefox，Safari，Opera中，直接调用eval()为当前作用域，window.eval()调用为全局作用域。</p>
+<p>尤其值得注意的是，Google Chrome 的不同版本之间对于eval的处理也有差异。</p>
+<p>如果需要在全局作用域eval()的效果，且通用于所有浏览器，那就得好好变通一下了。</p>
+<h4 id="方法之一："><a href="#方法之一：" class="headerlink" title="方法之一："></a>方法之一：</h4><p>使用IE专有的 <code>window.execScript</code> 。</p>
+<p>如果你碰到这个问题不知所措，并上网搜索，这个方法大概是最先也几乎唯一能搜索到的方法。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs coffeescript"><span class="hljs-built_in">window</span>.execScript (sExpression , sLanguage )。<br></code></pre></td></tr></table></figure>
+
+<p>比如上面那一段代码中eval一句如果换成 <code>window.execScript( &#39;var x=3;&#39;);</code> IE中的运行结果就是1了。</p>
+<p>==非IE内核的浏览器并不支持 <code>window.execScript</code>。==</p>
+<p>IE之所以有这个 <code>window.execScript</code> ，还和IE能够执行其他语言的脚本有关，通过给不同的 <code>sLanguage</code> 参数，IE这个方法除能够执行 <code>javascript</code> 之外，还可以执行 <code>vbscript</code> 或是其他任何安装过相应解释引擎的脚本如 <code>perl</code> , <code>python</code> 等。</p>
+<p>当需要在局部环境中执行的时候，我们就直接用 <code>eval()</code>。</p>
+<p>当需要在全局环境中执行的时候，我们可以封装一个通用的函数，就像下面这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// 在全局环境中执行</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalGlobal</span>(<span class="hljs-params">strScript</span>)</span>&#123;<br>    <span class="hljs-keyword">if</span>( <span class="hljs-built_in">window</span>.execScript) &#123;<br>        <span class="hljs-built_in">window</span>.execScript(strScript);<br>    &#125;<span class="hljs-keyword">else</span>&#123;<br>        <span class="hljs-built_in">window</span>.eval(strScript );<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>就是将IE和非IE区别开来对待。</p>
+<p>看起来，问题似乎圆满解决了。但是显然是有问题的，比如上表中的 Chrome 1.0 也和 IE 的 <code>eval()</code> 规则一致，况且还不知道其他浏览器其他版本是否有差异呢，因此，这种方法并不很可靠。</p>
+<p>但是如果你有一点完美主义者的倾向，那么事情还不能到此为止，肯定是有更好更简洁的方法的嘛。</p>
+<h3 id="方法之二："><a href="#方法之二：" class="headerlink" title="方法之二："></a>方法之二：</h3><p>新建一个<code>&lt;script&gt;</code>元素装载脚本。</p>
+<p>这种方法常用来解决 <code>innerHTML</code> 中的脚本不能运行的问题。但用来解决 <code>eval()</code> 的作用域问题，恐怕就比较罕见了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// 在全局环境中执行</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalGlobal</span>(<span class="hljs-params">strScript</span>)</span>&#123;<br>    <span class="hljs-keyword">var</span> a = <span class="hljs-built_in">document</span>.createElement (<span class="hljs-string">&quot;script&quot;</span> );<br>    a.type= <span class="hljs-string">&quot;text/javascript&quot;</span> ;<br>    a.text= strScript ;<br>    <span class="hljs-built_in">document</span>.getElementsByTagName (<span class="hljs-string">&quot;head&quot;</span> )[<span class="hljs-number">0</span>].appendChild(a);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>虽然这个方法有点变态，需要新增一个<code>&lt;script&gt;</code>元素，但优点是各种浏览器及版本通用，比方法一要好一些了。。</p>
+<p>但是如果你有再多一点完美主义者的倾向，那么事情还不能到此为止，毕竟添加了一个HTML元素嘛，影响了页面原本的DOM结构。</p>
+<h3 id="方法之三："><a href="#方法之三：" class="headerlink" title="方法之三："></a>方法之三：</h3><p>还是eval。回归原生态。</p>
+<p>我们 别忘了 <code>javascript</code> 里面有一个改变上下文环境的关键字，强大的 <code>with</code></p>
+<p>原来事情可以更简单更有效！</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// 在全局环境中执行</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">evalGlobal</span>(<span class="hljs-params">strScript</span>)</span>&#123;<br>    <span class="hljs-keyword">with</span>(<span class="hljs-built_in">window</span>)<span class="hljs-built_in">eval</span>(strScript) ;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>文章最开始的代码我们就可以这样来了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">xx</span>(<span class="hljs-params"></span>)</span>&#123;<br>    <span class="hljs-built_in">eval</span>(<span class="hljs-string">&#x27;var x=1;&#x27;</span>);  <span class="hljs-comment">// 局部变量</span><br>    <span class="hljs-function"><span class="hljs-title">with</span>(<span class="hljs-params"><span class="hljs-built_in">window</span></span>)</span>&#123;<br>        <span class="hljs-built_in">eval</span>(<span class="hljs-string">&#x27;var x=3;&#x27;</span>);<br>    &#125;   <span class="hljs-comment">//全局变量</span><br>    <span class="hljs-comment">//也可以用封装的 evalGlobal( &#x27;var x=3&#x27; );</span><br>    <span class="hljs-built_in">document</span>.writeln(x); <span class="hljs-comment">// 1 局部变量</span><br>    <span class="hljs-built_in">document</span>.writeln(<span class="hljs-built_in">window</span>.x); <span class="hljs-comment">// 3 全局变量</span><br>&#125;<br>xx();<br></code></pre></td></tr></table></figure>
+
+<p>特别：</p>
+<p>有时候，我们<code>eval()</code>要求既不是在全局执行，也不是在当前作用域执行，而是在父对象或子对象中执行，这时，用 <code>with(objContext)eval(strScript)</code>就更加是不可替代的选择了。</p>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p>让 <code>eval()</code> 全局作用域执行的方法主要有：</p>
+<p>（1）<code>window.execScript</code> + <code>window.eval</code>    级别：弱。 缺点：不简洁，不可靠，不通用。</p>
+<p>（2）<code>document.createElement(&quot;script&quot;)</code>    级别：凑合。缺点：不简洁，不干净。优点：可靠，通用。</p>
+<p>（3）<code>with(objContext)eval(strScript)</code>          级别：最佳。优点：简洁，干净，可靠，通用。</p>
+<table>
+<thead>
+<tr>
+<th>让 <code>eval()</code> 全局作用域执行的方法</th>
+<th>级别</th>
+<th>缺点</th>
+<th>优点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>window.execScript</code> + <code>window.eval</code></td>
+<td>弱</td>
+<td>不简洁，不可靠，不通用</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>document.createElement(&quot;script&quot;) </code></td>
+<td>凑合</td>
+<td>不简洁，不干净</td>
+<td>可靠，通用</td>
+</tr>
+<tr>
+<td><code>with(window)eval(strScript)</code></td>
+<td>最佳</td>
+<td>-</td>
+<td>简洁，干净，可靠，通用</td>
+</tr>
+</tbody></table>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/javascript/">javascript</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/js%E5%9F%BA%E7%A1%80/">js基础</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/9d0eee40d124/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">订阅发布模式和观察者模式的区别</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/f39489bf236f/">
+                        <span class="hidden-mobile">利用 Github Actions 自动部署 Hexo 博客</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     PEACE <i class="iconfont icon-love"></i> LOVE <script async src="https://www.googletagmanager.com/gtag/js?id=G-BSGZ4382PD"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag("js", new Date());
+gtag("config", "G-BSGZ4382PD"); </script> 
+  </div>
+  
+
+  
+
+  
+</footer>
+
+<!-- SCRIPTS -->
+
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":200})
+    NProgress.start()
+    document.addEventListener('DOMContentLoaded', function() {
+      window.NProgress && window.NProgress.inc();
+    })
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.0/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.0/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    (function () {
+      var path = "/local-search.xml";
+      var inputArea = document.querySelector("#local-search-input");
+      inputArea.onclick = function () {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+        this.onclick = null
+      }
+    })()
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+
+</body>
+</html>
